@@ -3,7 +3,17 @@
     <div class="card">
       <h2>登录</h2>
       <form @submit.prevent="handleLogin">
-        </form>
+        <div class="form-group">
+          <label for="username">用户名:</label>
+          <input type="text" id="username" v-model="username" required />
+        </div>
+        <div class="form-group">
+          <label for="password">密码:</label>
+          <input type="password" id="password" v-model="password" required />
+        </div>
+        <button type="submit">登录</button>
+        <p v-if="error" class="error-message">{{ error }}</p>
+      </form>
     </div>
   </div>
 </template>
@@ -26,7 +36,7 @@ const handleLogin = async () => {
     const response = await login(username.value, password.value);
     
     // 登录成功，存储 token
-    localStorage.setItem('userToken', response.token);
+    localStorage.setItem('userToken', response.access);
     
     router.push('/dashboard');
   } catch (err) {
