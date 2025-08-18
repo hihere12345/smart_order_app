@@ -1,18 +1,10 @@
 <template>
-  <div class="page-container login-container">
-    <h2>登录</h2>
-    <form @submit.prevent="handleLogin">
-      <div class="form-group">
-        <label for="username">用户名:</label>
-        <input type="text" id="username" v-model="username" required />
-      </div>
-      <div class="form-group">
-        <label for="password">密码:</label>
-        <input type="password" id="password" v-model="password" required />
-      </div>
-      <button type="submit">登录</button>
-      <p v-if="error" class="error-message">{{ error }}</p>
-    </form>
+  <div class="page-container">
+    <div class="card">
+      <h2>登录</h2>
+      <form @submit.prevent="handleLogin">
+        </form>
+    </div>
   </div>
 </template>
 

@@ -1,36 +1,25 @@
 <template>
-  <div class="dashboard-container">
-    <h2>欢迎来到仪表盘</h2>
-    <p>您已成功登录！</p>
-    <button @click="handleLogout">退出登录</button>
+  <div class="dashboard-layout">
+    <DashboardMenu />
+    <main class="content">
+      <router-view></router-view>
+    </main>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
-
-const router = useRouter();
-
-const handleLogout = () => {
-  localStorage.removeItem('userToken');
-  router.push('/login');
-};
+import DashboardMenu from '@/components/DashboardMenu.vue';
 </script>
 
 <style scoped>
-.dashboard-container {
-  max-width: 800px;
-  margin: 100px auto;
-  padding: 20px;
-  text-align: center;
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
 }
-button {
-  padding: 10px 20px;
-  margin-top: 20px;
-  background-color: #dc3545;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+
+.content {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #ecf0f1;
 }
 </style>
