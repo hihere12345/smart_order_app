@@ -51,8 +51,8 @@
                     <span :class="{'highlight-change': item.highlightQuantity}">{{ item.quantity }}</span>
                     <span>￥{{ item.price }}</span>
                     <span class="item-actions">
-                      <button v-if="hasPermission('core.change_order_item_quantity')" @click="editItemQuantity(order.id, item)" class="small-action-button edit-button">修改</button>
-                      <button v-if="hasPermission('core.delete_order_item')" @click="deleteItem(order.id, item.id)" class="small-action-button delete-button">删除</button>
+                      <button v-if="hasPermission('core.change_orderitem')" @click="editItemQuantity(item)" class="small-action-button edit-button">修改</button>
+                      <button v-if="hasPermission('core.delete_orderitem')" @click="deleteItem(item.id)" class="small-action-button delete-button">删除</button>
                     </span>
                   </div>
                 </div>

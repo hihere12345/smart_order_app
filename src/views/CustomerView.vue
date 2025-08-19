@@ -74,7 +74,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { 
   getTableMenu, 
@@ -91,6 +91,7 @@ const menuItems = ref([]);
 const selectedItems = ref({});
 const pendingOrder = ref(null);
 const order = ref(null); // 用于订单视图的订单数据
+let orderRefreshInterval;
 
 // ==================== 菜单视图逻辑 ====================
 const orderItems = computed(() => {
@@ -188,26 +189,52 @@ const pay = async () => {
   }
 };
 
-// ==================== 页面切换逻辑 ====================
+// ==================== 页面切换和生命周期管理 ====================
 const showMenuView = async () => {
   currentPage.value = 'menu';
-  selectedItems.value = {}; // 切换回菜单时清空选中项
-  await fetchPendingOrder(); // 重新检查是否有待支付订单
+  selectedItems.value = {};
+  await fetchPendingOrder();
+  // 从订单页回到菜单页时，清除刷新定时器
+  clearInterval(orderRefreshInterval);
 };
 
 const showOrderView = async () => {
   currentPage.value = 'order';
-  await fetchPendingOrder(); // 确保订单数据是最新的
+  await fetchPendingOrder();
+  // 切换到订单页时，启动刷新定时器
+  orderRefreshInterval = setInterval(fetchPendingOrder, 5000); // 每5秒刷新一次
 };
 
-// ==================== 页面加载 ====================
 onMounted(async () => {
   try {
     menuItems.value = await getTableMenu(tableNumber);
     await fetchPendingOrder();
+    // 如果一进入页面就有待支付订单，直接进入订单页并开启刷新
+    if (pendingOrder.value) {
+      currentPage.value = 'order';
+      orderRefreshInterval = setInterval(fetchPendingOrder, 5000);
+    }
   } catch (error) {
     console.error('获取数据失败:', error);
     alert('获取数据失败，请稍后再试。');
+  }
+});
+
+onUnmounted(() => {
+  // 组件卸载时清除定时器，防止内存泄漏
+  clearInterval(orderRefreshInterval);
+});
+
+// 监听 currentPage 变化，以便在切换页面时管理定时器
+watch(currentPage, (newPage, oldPage) => {
+  if (newPage === 'order' && oldPage === 'menu') {
+    // 确保从菜单页到订单页时定时器被启动
+    clearInterval(orderRefreshInterval); // 先清一次，防止重复
+    orderRefreshInterval = setInterval(fetchPendingOrder, 5000);
+  }
+  if (newPage === 'menu' && oldPage === 'order') {
+    // 确保从订单页到菜单页时定时器被清除
+    clearInterval(orderRefreshInterval);
   }
 });
 </script>
