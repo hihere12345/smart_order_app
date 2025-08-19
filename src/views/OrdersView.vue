@@ -2,13 +2,15 @@
   <div class="dashboard-content">
     <h3>订单管理</h3>
 
-    <div class="filter-buttons">
-      <button @click="filterByStatus('all')" :class="{ 'active': currentFilter === 'all' }">所有订单</button>
-      <button @click="filterByStatus('pending')" :class="{ 'active': currentFilter === 'pending' }">待处理</button>
-      <button @click="filterByStatus('preparing')" :class="{ 'active': currentFilter === 'preparing' }">准备中</button>
-      <button @click="filterByStatus('served')" :class="{ 'active': currentFilter === 'served' }">已上菜</button>
-      <button @click="filterByStatus('completed')" :class="{ 'active': currentFilter === 'completed' }">已完成</button>
-      <button @click="filterByStatus('cancelled')" :class="{ 'active': currentFilter === 'cancelled' }">已取消</button>
+    <div class="filter-checkboxes">
+      <label v-for="(text, status) in statusMap" :key="status" class="filter-label">
+        <input type="checkbox" :value="status" v-model="selectedStatuses">
+        {{ text }}
+      </label>
+    </div>
+
+    <div v-if="showNewOrUpdatedAlert" class="new-order-alert">
+      有新的订单或订单已更新！
     </div>
 
     <div v-if="filteredOrders.length > 0" class="table-container">
@@ -46,11 +48,11 @@
                   </div>
                   <div v-for="item in order.items" :key="item.id" class="list-item">
                     <span>{{ item.menu_item.name }}</span>
-                    <span>{{ item.quantity }}</span>
+                    <span :class="{'highlight-change': item.highlightQuantity}">{{ item.quantity }}</span>
                     <span>￥{{ item.price }}</span>
                     <span class="item-actions">
-                      <button v-if="hasPermission('core.change_orderitem')" @click="editItemQuantity(item)" class="small-action-button edit-button">修改</button>
-                      <button v-if="hasPermission('core.delete_orderitem')" @click="deleteItem(item.id)" class="small-action-button delete-button">删除</button>
+                      <button v-if="hasPermission('core.change_order_item_quantity')" @click="editItemQuantity(order.id, item)" class="small-action-button edit-button">修改</button>
+                      <button v-if="hasPermission('core.delete_order_item')" @click="deleteItem(order.id, item.id)" class="small-action-button delete-button">删除</button>
                     </span>
                   </div>
                 </div>
@@ -88,17 +90,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { getOrders, changeOrderStatus, updateOrderItemQuantity, deleteOrderItem } from '@/remote/api.js';
 
 const orders = ref([]);
-const currentFilter = ref('all');
+// const currentFilter = ref('all');
 const userPermissions = ref([]);
 
 // 状态管理
 const isStatusModalVisible = ref(false);
 const selectedOrder = ref({});
 const newStatus = ref('');
+const showNewOrUpdatedAlert = ref(false);
+const selectedStatuses = ref([]);
+let orderFetchInterval;
 
 const statusMap = {
     'pending': '待处理',
@@ -117,29 +122,108 @@ const getStoredPermissions = () => {
   userPermissions.value = permissions ? JSON.parse(permissions) : [];
 };
 
-const filteredOrders = computed(() => {
-  if (currentFilter.value === 'all') {
-    return orders.value;
-  }
-  return orders.value.filter(order => order.status === currentFilter.value);
-});
+// const filterByStatus = (status) => {
+//   currentFilter.value = status;
+// };
 
+const getStatusText = (status) => {
+  return statusMap[status] || status;
+};
+
+// ==================== 实时刷新和新订单提醒 ====================
 const fetchOrders = async () => {
   try {
-    const data = await getOrders();
-    orders.value = data;
+    const newData = await getOrders();
+    const oldOrders = orders.value;
+    
+    // 如果是第一次加载，直接赋值，不提示
+    if (oldOrders.length === 0) {
+      orders.value = newData;
+      return;
+    }
+    
+    let hasUpdated = false;
+    const oldOrdersMap = new Map(oldOrders.map(o => [o.id, o]));
+    const updatedOrders = [];
+
+    // 遍历新数据，对比变化并添加标记
+    for (const newOrder of newData) {
+      const oldOrder = oldOrdersMap.get(newOrder.id);
+      
+      if (!oldOrder) {
+        // 新订单
+        newOrder.isNew = true;
+        hasUpdated = true;
+      } else {
+        // 现有订单，检查具体变化
+        const oldOrderString = JSON.stringify(oldOrder);
+        const newOrderString = JSON.stringify(newOrder);
+
+        if (oldOrderString !== newOrderString) {
+          hasUpdated = true;
+          // 检查状态变化
+          if (newOrder.status !== oldOrder.status) {
+            newOrder.highlightStatus = true;
+          }
+          // 检查订单项数量变化
+          const oldItemsMap = new Map(oldOrder.items.map(i => [i.id, i]));
+          for (const newItem of newOrder.items) {
+            const oldItem = oldItemsMap.get(newItem.id);
+            if (!oldItem || newItem.quantity !== oldItem.quantity) {
+              newItem.highlightQuantity = true;
+            }
+          }
+        }
+      }
+      updatedOrders.push(newOrder);
+    }
+    
+    // 检查是否有订单被删除
+    if (newData.length !== oldOrders.length) {
+        hasUpdated = true;
+    }
+
+    orders.value = updatedOrders;
+    
+    if (hasUpdated) {
+      showNewOrUpdatedAlert.value = true;
+      setTimeout(() => {
+        showNewOrUpdatedAlert.value = false;
+      }, 5000);
+    }
+    
   } catch (error) {
     console.error('获取订单列表失败:', error);
   }
 };
 
-const filterByStatus = (status) => {
-  currentFilter.value = status;
-};
+onMounted(() => {
+  getStoredPermissions();
+  fetchOrders(); 
+  orderFetchInterval = setInterval(fetchOrders, 5000); // 每10秒获取一次
+});
 
-const getStatusText = (status) => {
-  return statusMap[status] || status;
-};
+onUnmounted(() => {
+  clearInterval(orderFetchInterval);
+});
+
+// ==================== 多选筛选逻辑 ====================
+const filteredOrders = computed(() => {
+  if (selectedStatuses.value.length === 0) {
+    return orders.value;
+  }
+  return orders.value.filter(order => selectedStatuses.value.includes(order.status));
+});
+
+// 监听 selectedStatuses 变化，如果为空，则默认选中'待处理'
+watch(selectedStatuses, (newVal) => {
+  if (newVal.length === 0) {
+    // 避免因为复选框被全部取消而导致列表为空
+    // 可以在这里选择默认显示某个状态，例如 'pending'
+    // selectedStatuses.value = ['pending'];
+  }
+}, { immediate: true });
+
 
 // 显示修改状态模态框
 const showStatusModal = (order) => {

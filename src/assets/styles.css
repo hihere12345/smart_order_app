@@ -632,3 +632,89 @@ tr:hover {
 .status-served { background-color: #5cb85c; }
 .status-completed { background-color: #3498db; }
 .status-cancelled { background-color: #c0392b; }
+
+
+/* ==================================== */
+/* 新增：复选框筛选样式 */
+/* ==================================== */
+.filter-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+.filter-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+/* ==================================== */
+/* 新增：新订单提示框样式 */
+/* ==================================== */
+.new-order-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--primary-color);
+  color: white;
+  padding: 15px 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  animation: fadeInOut 5s forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -20px); }
+  10% { opacity: 1; transform: translate(-50%, 0); }
+  90% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+
+/* 新订单整行高亮效果 */
+.highlight-new-row {
+  animation: newOrderFlash 5s forwards;
+}
+
+@keyframes newOrderFlash {
+  0% { background-color: rgba(255, 230, 150, 0.8); }
+  50% { background-color: rgba(255, 255, 255, 0.2); }
+  100% { background-color: transparent; }
+}
+
+/* 状态徽章高亮效果 */
+.highlight-change-status {
+  animation: statusFlash 5s forwards;
+}
+
+@keyframes statusFlash {
+  0% { transform: scale(1.1); box-shadow: 0 0 10px 5px rgba(255, 255, 0, 0.5); }
+  50% { transform: scale(1); box-shadow: none; }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+/* 数量高亮效果 */
+.highlight-change {
+  animation: itemFlash 5s forwards;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+@keyframes itemFlash {
+  0% { background-color: rgba(255, 165, 0, 0.5); }
+  100% { background-color: transparent; }
+}
