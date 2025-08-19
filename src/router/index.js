@@ -4,15 +4,16 @@ import DashboardView from '../views/DashboardView.vue'
 import OrdersView from '../views/OrdersView.vue'
 import MenuView from '../views/MenuView.vue'
 import TablesView from '../views/TablesView.vue'
+import CustomerView from '../views/CustomerView.vue'
 import { getPermissions, setAuthToken } from '@/remote/api.js';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      redirect: '/login'
-    },
+    // {
+    //   path: '/',
+    //   redirect: '/login'
+    // },
     {
       path: '/login',
       name: 'login',
@@ -44,6 +45,11 @@ const router = createRouter({
           meta: { requiresPermission: 'core.view_table' } 
         },
       ]
+    },
+    {
+      path: '/:tableNumber',
+      name: 'customer',
+      component: CustomerView
     }
   ]
 })
@@ -75,6 +81,15 @@ router.beforeEach(async (to, from, next) => {
         localStorage.removeItem('userToken');
         localStorage.removeItem('userPermissions');
         return next('/login');
+      }
+    }
+
+    if (to.meta.requiresPermission) {
+      const requiredPermission = to.meta.requiresPermission;
+      const parsedPermissions = JSON.parse(userPermissions);
+      if (!parsedPermissions.includes(requiredPermission)) {
+        console.warn(`Access denied. Missing permission: ${requiredPermission}`);
+        return next('/dashboard/home'); 
       }
     }
   } 
