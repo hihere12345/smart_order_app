@@ -52,13 +52,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { getTables, deleteTable, addTable, updateTable } from '@/remote/api.js';
 
 const tables = ref([]);
 const userPermissions = ref([]);
 const isModalVisible = ref(false);
 const isEditMode = ref(false);
+let tableFetchInterval;
 const form = ref({
   id: null,
   table_number: '',
@@ -71,12 +72,23 @@ const hasPermission = (permission) => {
 
 const fetchTables = async () => {
   try {
-    const data = await getTables();
-    tables.value = data;
+    tables.value = await getTables();
   } catch (error) {
     console.error('获取餐桌列表失败:', error);
   }
 };
+
+onMounted(() => {
+  getStoredPermissions();
+  fetchTables();
+  // 每隔10秒自动刷新一次
+  tableFetchInterval = setInterval(fetchTables, 5000);
+});
+
+onUnmounted(() => {
+  // 组件卸载时清除定时器，防止内存泄漏
+  clearInterval(tableFetchInterval);
+});
 
 const getStoredPermissions = () => {
   const permissions = localStorage.getItem('userPermissions');
@@ -145,8 +157,8 @@ const deleteTableAction = async (tableId) => {
   }
 };
 
-onMounted(() => {
-  getStoredPermissions();
-  fetchTables();
-});
+// onMounted(() => {
+//   getStoredPermissions();
+//   fetchTables();
+// });
 </script>
