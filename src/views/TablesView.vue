@@ -10,6 +10,7 @@
           <tr>
             <th>餐桌号</th>
             <th>是否可用</th>
+            <th>二维码</th>
             <th class="actions-header">操作</th>
           </tr>
         </thead>
@@ -17,6 +18,9 @@
           <tr v-for="table in tables" :key="table.id">
             <td>{{ table.table_number }}</td>
             <td>{{ table.is_available ? '是' : '否' }}</td>
+            <td>
+              <a :href="table.qr_code" target="_blank">查看二维码</a>
+            </td>
             <td class="table-actions">
               <button v-if="hasPermission('core.change_table')" @click="updateTableAction(table)" class="small-action-button edit-button">编辑</button>
               <button v-if="hasPermission('core.delete_table')" @click="deleteTableAction(table.id)" class="small-action-button delete-button">删除</button>
