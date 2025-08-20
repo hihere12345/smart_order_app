@@ -66,11 +66,11 @@
       <p>没有找到任何订单。</p>
     </div>
   </div>
-  
+
   <div v-if="isStatusModalVisible" class="modal-overlay">
     <div class="modal-content">
       <h4>修改订单 {{ selectedOrder.id }} 状态</h4>
-      <p>当前状态: 
+      <p>当前状态:
         <span :class="['status-badge', 'status-' + selectedOrder.status]">
           {{ getStatusText(selectedOrder.status) }}
         </span>
@@ -94,10 +94,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { getOrders, changeOrderStatus, updateOrderItemQuantity, deleteOrderItem } from '@/remote/api.js';
 
 const orders = ref([]);
-// const currentFilter = ref('all');
 const userPermissions = ref([]);
-
-// 状态管理
 const isStatusModalVisible = ref(false);
 const selectedOrder = ref({});
 const newStatus = ref('');
@@ -122,34 +119,27 @@ const getStoredPermissions = () => {
   userPermissions.value = permissions ? JSON.parse(permissions) : [];
 };
 
-// const filterByStatus = (status) => {
-//   currentFilter.value = status;
-// };
-
 const getStatusText = (status) => {
   return statusMap[status] || status;
 };
 
-// ==================== 实时刷新和新订单提醒 ====================
 const fetchOrders = async () => {
   try {
     const newData = await getOrders();
     const oldOrders = orders.value;
-    
-    // 如果是第一次加载，直接赋值，不提示
+
     if (oldOrders.length === 0) {
       orders.value = newData;
       return;
     }
-    
+
     let hasUpdated = false;
     const oldOrdersMap = new Map(oldOrders.map(o => [o.id, o]));
     const updatedOrders = [];
 
-    // 遍历新数据，对比变化并添加标记
     for (const newOrder of newData) {
       const oldOrder = oldOrdersMap.get(newOrder.id);
-      
+
       if (!oldOrder) {
         // 新订单
         newOrder.isNew = true;
@@ -177,21 +167,19 @@ const fetchOrders = async () => {
       }
       updatedOrders.push(newOrder);
     }
-    
-    // 检查是否有订单被删除
+
     if (newData.length !== oldOrders.length) {
         hasUpdated = true;
     }
 
     orders.value = updatedOrders;
-    
+
     if (hasUpdated) {
       showNewOrUpdatedAlert.value = true;
       setTimeout(() => {
         showNewOrUpdatedAlert.value = false;
       }, 5000);
     }
-    
   } catch (error) {
     console.error('获取订单列表失败:', error);
   }
@@ -199,7 +187,7 @@ const fetchOrders = async () => {
 
 onMounted(() => {
   getStoredPermissions();
-  fetchOrders(); 
+  fetchOrders();
   orderFetchInterval = setInterval(fetchOrders, 5000); // 每10秒获取一次
 });
 
@@ -207,7 +195,6 @@ onUnmounted(() => {
   clearInterval(orderFetchInterval);
 });
 
-// ==================== 多选筛选逻辑 ====================
 const filteredOrders = computed(() => {
   if (selectedStatuses.value.length === 0) {
     return orders.value;
@@ -215,24 +202,18 @@ const filteredOrders = computed(() => {
   return orders.value.filter(order => selectedStatuses.value.includes(order.status));
 });
 
-// 监听 selectedStatuses 变化，如果为空，则默认选中'待处理'
 watch(selectedStatuses, (newVal) => {
   if (newVal.length === 0) {
-    // 避免因为复选框被全部取消而导致列表为空
-    // 可以在这里选择默认显示某个状态，例如 'pending'
-    // selectedStatuses.value = ['pending'];
+    selectedStatuses.value = ['pending'];
   }
 }, { immediate: true });
 
-
-// 显示修改状态模态框
 const showStatusModal = (order) => {
   selectedOrder.value = order;
-  newStatus.value = order.status; // 默认选中当前状态
+  newStatus.value = order.status;
   isStatusModalVisible.value = true;
 };
 
-// 处理状态修改
 const handleStatusChange = async () => {
   try {
     if (newStatus.value && newStatus.value !== selectedOrder.value.status) {
@@ -247,7 +228,6 @@ const handleStatusChange = async () => {
   }
 };
 
-// 其他操作函数保持不变
 const editItemQuantity = async (item) => {
   const newQuantity = parseInt(prompt(`请输入 ${item.menu_item.name} 的新数量:`));
   if (newQuantity > 0) {

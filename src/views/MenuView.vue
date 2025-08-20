@@ -1,9 +1,7 @@
 <template>
   <div class="dashboard-content">
     <h3>菜单管理</h3>
-
     <button v-if="hasPermission('core.add_menuitem')" @click="addMenuAction" class="add-button">添加菜单项</button>
-
     <div v-if="menuList.length > 0" class="table-container">
       <table>
         <thead>
@@ -97,10 +95,8 @@ const getStoredPermissions = () => {
   userPermissions.value = permissions ? JSON.parse(permissions) : [];
 };
 
-// 显示添加模态框
 const addMenuAction = () => {
   isEditMode.value = false;
-  // 重置表单
   form.value = {
     id: null,
     name: '',
@@ -111,20 +107,16 @@ const addMenuAction = () => {
   isModalVisible.value = true;
 };
 
-// 显示编辑模态框
 const updateMenuAction = (menu) => {
   isEditMode.value = true;
-  // 填充表单
   form.value = { ...menu };
   isModalVisible.value = true;
 };
 
-// 隐藏模态框
 const hideModal = () => {
   isModalVisible.value = false;
 };
 
-// 处理表单提交
 const handleFormSubmit = async () => {
   try {
     if (isEditMode.value) {
@@ -143,7 +135,6 @@ const handleFormSubmit = async () => {
       });
     }
 
-    // 隐藏模态框并刷新列表
     hideModal();
     fetchMenuList();
   } catch (error) {
@@ -157,7 +148,7 @@ const deleteMenuAction = async (menuId) => {
     try {
       await deleteMenu(menuId);
       console.log('菜单项删除成功');
-      fetchMenuList(); 
+      fetchMenuList();
     } catch (error) {
       console.error('删除菜单项失败:', error);
       alert('删除失败，请重试。');

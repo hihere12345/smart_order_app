@@ -85,12 +85,10 @@ const fetchTables = async () => {
 onMounted(() => {
   getStoredPermissions();
   fetchTables();
-  // 每隔10秒自动刷新一次
   tableFetchInterval = setInterval(fetchTables, 5000);
 });
 
 onUnmounted(() => {
-  // 组件卸载时清除定时器，防止内存泄漏
   clearInterval(tableFetchInterval);
 });
 
@@ -99,10 +97,9 @@ const getStoredPermissions = () => {
   userPermissions.value = permissions ? JSON.parse(permissions) : [];
 };
 
-// 显示添加模态框
 const addTableAction = () => {
   isEditMode.value = false;
-  // 重置表单
+
   form.value = {
     id: null,
     table_number: '',
@@ -111,20 +108,16 @@ const addTableAction = () => {
   isModalVisible.value = true;
 };
 
-// 显示编辑模态框
 const updateTableAction = (table) => {
   isEditMode.value = true;
-  // 填充表单
   form.value = { ...table };
   isModalVisible.value = true;
 };
 
-// 隐藏模态框
 const hideModal = () => {
   isModalVisible.value = false;
 };
 
-// 处理表单提交
 const handleFormSubmit = async () => {
   try {
     if (isEditMode.value) {
@@ -138,8 +131,7 @@ const handleFormSubmit = async () => {
         is_available: form.value.is_available
       });
     }
-    
-    // 隐藏模态框并刷新列表
+
     hideModal();
     fetchTables();
   } catch (error) {
@@ -160,9 +152,4 @@ const deleteTableAction = async (tableNumber) => {
     }
   }
 };
-
-// onMounted(() => {
-//   getStoredPermissions();
-//   fetchTables();
-// });
 </script>

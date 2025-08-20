@@ -21,7 +21,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { login } from '@/remote/api.js'; // 导入login函数
+import { login } from '@/remote/api.js';
 
 const username = ref('');
 const password = ref('');
@@ -32,12 +32,9 @@ const handleLogin = async () => {
   error.value = '';
 
   try {
-    // 调用封装好的API函数
     const response = await login(username.value, password.value);
-    
-    // 登录成功，存储 token
     localStorage.setItem('userToken', response.access);
-    
+
     router.push('/dashboard');
   } catch (err) {
     if (err.response && err.response.status === 401) {

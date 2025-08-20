@@ -1,7 +1,6 @@
 <template>
   <div class="customer-main-container">
     <div class="card customer-view-card">
-      
       <div v-if="currentPage === 'menu'">
         <h2>欢迎！请浏览菜单</h2>
         <div class="menu-list">
@@ -16,17 +15,17 @@
           </div>
         </div>
 
-        <button 
-          @click="submitOrder" 
-          :disabled="orderItems.length === 0" 
+        <button
+          @click="submitOrder"
+          :disabled="orderItems.length === 0"
           class="submit-order-btn"
         >
           {{ pendingOrder ? '加单' : '下单' }} (总计: ￥{{ total }})
         </button>
 
-        <button 
-          v-if="pendingOrder" 
-          @click="showOrderView" 
+        <button
+          v-if="pendingOrder"
+          @click="showOrderView"
           class="view-order-btn"
         >
           查看订单
@@ -38,7 +37,7 @@
         <div v-if="order && order.status !== 'completed' && order.status !== 'cancelled'">
           <div class="order-details">
             <p>订单号: <strong>{{ order.id }}</strong></p>
-            <p>状态: 
+            <p>状态:
               <span :class="['status-badge', 'status-' + order.status]">
                 {{ getStatusText(order.status) }}
               </span>
@@ -59,7 +58,6 @@
               <span>￥{{ item.price }}</span>
             </div>
           </div>
-          
           <button @click="pay" class="pay-button">去支付</button>
           <button @click="showMenuView" class="go-to-menu-btn">继续加单</button>
         </div>
@@ -76,24 +74,23 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { 
-  getTableMenu, 
-  submitOrder as submitNewOrder, 
-  getTableUnpaidOrder, 
+import {
+  getTableMenu,
+  submitOrder as submitNewOrder,
+  getTableUnpaidOrder,
   payOrder
 } from '@/remote/api.js';
 
 const route = useRoute();
 
-const currentPage = ref('menu'); // 'menu' 或 'order'
+const currentPage = ref('menu');
 const tableNumber = route.params.tableNumber;
 const menuItems = ref([]);
 const selectedItems = ref({});
 const pendingOrder = ref(null);
-const order = ref(null); // 用于订单视图的订单数据
+const order = ref(null);
 let orderRefreshInterval;
 
-// ==================== 菜单视图逻辑 ====================
 const orderItems = computed(() => {
   const items = [];
   for (const id in selectedItems.value) {
@@ -138,7 +135,7 @@ const submitOrder = async () => {
     const orderData = { items: items };
     await submitNewOrder(tableNumber, orderData);
     alert('下单成功！');
-    showOrderView(); // 下单或加单成功后跳转到订单页面
+    showOrderView();
   } catch (error) {
     console.info(error);
     if (error.response && error.response.status === 404) {
@@ -150,7 +147,6 @@ const submitOrder = async () => {
   }
 };
 
-// ==================== 订单视图逻辑 ====================
 const totalOrderAmount = computed(() => {
   if (!order.value || !order.value.items) return 0;
   return order.value.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -183,7 +179,7 @@ const pay = async () => {
     try {
       await payOrder(order.value.id);
       alert('支付成功！');
-      await fetchPendingOrder(); // 重新获取订单，状态应该变为“已完成”
+      await fetchPendingOrder();
       if (!pendingOrder.value) {
         showMenuView();
       }
@@ -194,27 +190,23 @@ const pay = async () => {
   }
 };
 
-// ==================== 页面切换和生命周期管理 ====================
 const showMenuView = async () => {
   currentPage.value = 'menu';
   selectedItems.value = {};
   await fetchPendingOrder();
-  // 从订单页回到菜单页时，清除刷新定时器
   clearInterval(orderRefreshInterval);
 };
 
 const showOrderView = async () => {
   currentPage.value = 'order';
   await fetchPendingOrder();
-  // 切换到订单页时，启动刷新定时器
-  orderRefreshInterval = setInterval(fetchPendingOrder, 5000); // 每5秒刷新一次
+  orderRefreshInterval = setInterval(fetchPendingOrder, 5000);
 };
 
 onMounted(async () => {
   try {
     menuItems.value = await getTableMenu(tableNumber);
     await fetchPendingOrder();
-    // 如果一进入页面就有待支付订单，直接进入订单页并开启刷新
     if (pendingOrder.value) {
       currentPage.value = 'order';
       orderRefreshInterval = setInterval(fetchPendingOrder, 5000);
@@ -226,19 +218,15 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  // 组件卸载时清除定时器，防止内存泄漏
   clearInterval(orderRefreshInterval);
 });
 
-// 监听 currentPage 变化，以便在切换页面时管理定时器
 watch(currentPage, (newPage, oldPage) => {
   if (newPage === 'order' && oldPage === 'menu') {
-    // 确保从菜单页到订单页时定时器被启动
-    clearInterval(orderRefreshInterval); // 先清一次，防止重复
+    clearInterval(orderRefreshInterval);
     orderRefreshInterval = setInterval(fetchPendingOrder, 5000);
   }
   if (newPage === 'menu' && oldPage === 'order') {
-    // 确保从订单页到菜单页时定时器被清除
     clearInterval(orderRefreshInterval);
   }
 });
