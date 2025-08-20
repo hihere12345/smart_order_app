@@ -140,8 +140,13 @@ const submitOrder = async () => {
     alert('下单成功！');
     showOrderView(); // 下单或加单成功后跳转到订单页面
   } catch (error) {
-    console.error('下单或加单失败:', error);
-    alert('操作失败，请重试。');
+    console.info(error);
+    if (error.response && error.response.status === 404) {
+      alert('下单失败，无效餐桌号码。');
+    } else {
+        console.error('下单或加单失败:', error);
+        alert('操作失败，请重试。');
+    }
   }
 };
 

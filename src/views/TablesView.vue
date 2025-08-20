@@ -23,7 +23,7 @@
             </td>
             <td class="table-actions">
               <button v-if="hasPermission('core.change_table')" @click="updateTableAction(table)" class="small-action-button edit-button">编辑</button>
-              <button v-if="hasPermission('core.delete_table')" @click="deleteTableAction(table.id)" class="small-action-button delete-button">删除</button>
+              <button v-if="hasPermission('core.delete_table')" @click="deleteTableAction(table.table_number)" class="small-action-button delete-button">删除</button>
             </td>
           </tr>
         </tbody>
@@ -128,7 +128,7 @@ const hideModal = () => {
 const handleFormSubmit = async () => {
   try {
     if (isEditMode.value) {
-      await updateTable(form.value.id, {
+      await updateTable(form.value.table_number, {
         table_number: form.value.table_number,
         is_available: form.value.is_available
       });
@@ -148,10 +148,10 @@ const handleFormSubmit = async () => {
   }
 };
 
-const deleteTableAction = async (tableId) => {
+const deleteTableAction = async (tableNumber) => {
   if (confirm('确定要删除这个餐桌吗？')) {
     try {
-      await deleteTable(tableId);
+      await deleteTable(tableNumber);
       console.log('餐桌删除成功');
       fetchTables(); 
     } catch (error) {

@@ -55,14 +55,14 @@ export const addTable = async (tableData) => {
 };
 
 // 新增：删除一个餐桌
-export const deleteTable = async (tableId) => {
-  const response = await axios.delete(`${API_ADMIN_TABLES_URL}/${tableId}/`);
+export const deleteTable = async (tableNumber) => {
+  const response = await axios.delete(`${API_ADMIN_TABLES_URL}/${tableNumber}/`);
   return response.data;
 };
 
 // 新增：更新一个餐桌的信息
-export const updateTable = async (tableId, tableData) => {
-  const response = await axios.put(`${API_ADMIN_TABLES_URL}/${tableId}/`, tableData);
+export const updateTable = async (tableNumber, tableData) => {
+  const response = await axios.put(`${API_ADMIN_TABLES_URL}/${tableNumber}/`, tableData);
   return response.data;
 };
 
