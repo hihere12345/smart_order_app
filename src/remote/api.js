@@ -1,10 +1,11 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'http://192.168.1.171:8000/api';
 const API_ADMIN_TABLES_URL = `${API_BASE_URL}/admin/tables`;
 const API_ADMIN_MENU_URL = `${API_BASE_URL}/admin/menu`;
 const API_STAFF_ORDERS_URL = `${API_BASE_URL}/staff/orders`;
 const API_STAFF_ORDER_ITEMS_URL = `${API_BASE_URL}/staff/order-items`;
+const API_REPORT_URL = `${API_BASE_URL}/reports`;
 const API_TABLES_URL = `${API_BASE_URL}/tables`;
 
 export const setAuthToken = (token) => {
@@ -25,7 +26,7 @@ export const login = async (username, password) => {
 
 export const getPermissions = async () => {
   const response = await axios.get(`${API_BASE_URL}/permissions/`);
-  return response.data.permissions;
+  return response.data;
 };
 
 export const getTables = async () => {
@@ -105,4 +106,11 @@ export const getTableUnpaidOrder = async (tableNumber) => {
 export const payOrder = async (orderId) => {
   const response = await axios.post(`${API_BASE_URL}/orders/${orderId}/pay/`);
   return response.data;
+};
+
+export const getReportSummary = async (startDate, endDate) => {
+  const params = {};
+  if (startDate) params.start_date = startDate;
+  if (endDate) params.end_date = endDate;
+  return await axios.get(`${API_REPORT_URL}`, { params }).then(res => res.data);
 };

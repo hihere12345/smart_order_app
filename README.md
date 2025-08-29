@@ -1,35 +1,9 @@
-# smart_order_app
-
-This template should help get you started developing with Vue 3 in Vite.
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+如何运行该项目：
+1. 确保python+Django的后端API服务已经启动。
+2. 安装依赖：npm install
+3. 运行服务：npm run dev
+4. 通过http://localhost:5173访问顾客页面
+5. 通过http://localhost:5173/dashboard访问管理后台
+   1. 用户名：manager1，密码：smartorder123 经理角色，拥有大部分管理权限
+   2. 用户名：waiter1，密码：smartorder123 服务员角色，拥有查看餐桌和订单管理权限
+   3. 用户名：cook1，密码：smartorder123 厨师角色，拥有查看订单权限

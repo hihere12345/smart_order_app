@@ -10,6 +10,7 @@
             <th>描述</th>
             <th>价格</th>
             <th>是否可用</th>
+            <th>创建时间</th>
             <th class="actions-header">操作</th>
           </tr>
         </thead>
@@ -19,6 +20,7 @@
             <td>{{ menu.description }}</td>
             <td>{{ menu.price }}</td>
             <td>{{ menu.is_available ? '是' : '否' }}</td>
+            <td>{{ new Date(menu.created_at).toLocaleString() }}</td>
             <td class="table-actions">
               <button v-if="hasPermission('core.change_menuitem')" @click="updateMenuAction(menu)" class="small-action-button edit-button">编辑</button>
               <button v-if="hasPermission('core.delete_menuitem')" @click="deleteMenuAction(menu.id)" class="small-action-button delete-button">删除</button>

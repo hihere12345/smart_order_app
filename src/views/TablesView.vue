@@ -11,6 +11,7 @@
             <th>餐桌号</th>
             <th>是否可用</th>
             <th>二维码</th>
+            <th>创建时间</th>
             <th class="actions-header">操作</th>
           </tr>
         </thead>
@@ -21,6 +22,7 @@
             <td>
               <a :href="table.qr_code" target="_blank">查看二维码</a>
             </td>
+            <td>{{ new Date(table.created_at).toLocaleString() }}</td>
             <td class="table-actions">
               <button v-if="hasPermission('core.change_table')" @click="updateTableAction(table)" class="small-action-button edit-button">编辑</button>
               <button v-if="hasPermission('core.delete_table')" @click="deleteTableAction(table.table_number)" class="small-action-button delete-button">删除</button>
@@ -145,7 +147,7 @@ const deleteTableAction = async (tableNumber) => {
     try {
       await deleteTable(tableNumber);
       console.log('餐桌删除成功');
-      fetchTables(); 
+      fetchTables();
     } catch (error) {
       console.error('删除餐桌失败:', error);
       alert('删除失败，请重试。');

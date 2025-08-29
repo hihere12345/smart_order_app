@@ -5,6 +5,7 @@ import OrdersView from '../views/OrdersView.vue'
 import MenuView from '../views/MenuView.vue'
 import TablesView from '../views/TablesView.vue'
 import CustomerView from '../views/CustomerView.vue'
+import ReportsView from '../views/ReportsView.vue'
 import { getPermissions, setAuthToken } from '@/remote/api.js';
 
 const router = createRouter({
@@ -39,6 +40,12 @@ const router = createRouter({
           component: TablesView,
           meta: { requiresPermission: 'core.view_table' }
         },
+        {
+          path: 'reports',
+          name: 'reports',
+          component: ReportsView,
+          meta: { requiresGroup: 'managers' }
+        },
       ]
     },
     {
@@ -59,16 +66,19 @@ router.beforeEach(async (to, from, next) => {
 
     setAuthToken(userToken);
     const userPermissions = localStorage.getItem('userPermissions');
+    const userGroups = localStorage.getItem('userGroups');
 
     if (!userPermissions || from.name === 'login') {
       try {
         console.log('Fetching permissions for dashboard...');
         const permissions = await getPermissions();
-        localStorage.setItem('userPermissions', JSON.stringify(permissions));
+        localStorage.setItem('userPermissions', JSON.stringify(permissions.permissions));
+        localStorage.setItem('userGroups', JSON.stringify(permissions.groups)); // Assuming groups are not implemented yet
       } catch (err) {
         console.error('Failed to get permissions:', err);
         localStorage.removeItem('userToken');
         localStorage.removeItem('userPermissions');
+        localStorage.removeItem('userGroups');
         return next('/login');
       }
     }
@@ -78,6 +88,15 @@ router.beforeEach(async (to, from, next) => {
       const parsedPermissions = JSON.parse(userPermissions);
       if (!parsedPermissions.includes(requiredPermission)) {
         console.warn(`Access denied. Missing permission: ${requiredPermission}`);
+        return next('/dashboard/home');
+      }
+    }
+
+    if (to.meta.requiresGroup) {
+      const requiresGroup = to.meta.requiresGroup;
+      const parsedGroup = JSON.parse(userGroups);
+      if (!parsedGroup.includes(requiresGroup)) {
+        console.warn(`Access denied. Missing group: ${requiresGroup}`);
         return next('/dashboard/home');
       }
     }

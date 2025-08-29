@@ -20,6 +20,8 @@
             <th>桌号</th>
             <th>状态</th>
             <th>总价格</th>
+            <th>创建时间</th>
+            <th>更新时间</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -33,12 +35,14 @@
                 </span>
               </td>
               <td>{{ order.total_price }}</td>
+              <td>{{ new Date(order.created_at).toLocaleString() }}</td>
+              <td>{{ new Date(order.updated_at).toLocaleString() }}</td>
               <td class="table-actions">
                 <button v-if="hasPermission('core.change_order')" @click="showStatusModal(order)" class="small-action-button edit-button">修改状态</button>
               </td>
             </tr>
             <tr class="order-items-row">
-              <td colspan="4">
+              <td colspan="6">
                 <div class="order-items-list">
                   <div class="list-header">
                     <span>菜单项</span>
